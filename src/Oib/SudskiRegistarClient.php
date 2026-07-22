@@ -8,15 +8,15 @@ use Stboris\LaravelCroatiaToolkit\Oib\Data\CompanyData;
 use Stboris\LaravelCroatiaToolkit\Oib\Exceptions\SudskiRegistarException;
 
 /**
- * OAuth2 client-credentials access to the Sudski registar open data API.
+ * OAuth2 client-credentials access to the Sudski registar open data API,
+ * verified live against the test environment (2026-07-22).
  *
- * The token endpoint (/api/oauth/token) is confirmed against the published
- * "Portal otvorenih podataka Sudskog registra" developer guide. The lookup
- * path below is this guide's documented method name (detalji_subjekta)
- * under the "javni" (public) prefix, but the exact REST route was not in
- * that guide — confirm it against the account's own OpenAPI spec at
- * {base}/api/javni/dokumentacija/open_api after registering, and adjust
- * lookupPath() if it differs.
+ * Token endpoint uses HTTP Basic Auth (client_id:client_secret), not
+ * client credentials in the POST body. The lookup endpoint lives on a
+ * different host path than the token endpoint (/api/javni/detalji_subjekta,
+ * not under /api/javni/subjekti/...), takes tip_identifikatora + identifikator
+ * query params, and — with no_data_error=0 — returns an empty JSON object
+ * (not a 404) when nothing matches.
  */
 class SudskiRegistarClient
 {
@@ -28,26 +28,27 @@ class SudskiRegistarClient
 
     public function lookup(string $oib): CompanyData
     {
-        $response = Http::baseUrl($this->baseUrl())
+        $response = Http::baseUrl($this->baseUrl().'/api/javni')
             ->withToken($this->token())
             ->timeout(config('laravel-croatia-toolkit.http.timeout', 5))
             ->connectTimeout(config('laravel-croatia-toolkit.http.connect_timeout', 3))
-            ->get($this->lookupPath(), ['oib' => $oib]);
-
-        if ($response->status() === 404) {
-            throw SudskiRegistarException::notFound($oib);
-        }
+            ->get('/detalji_subjekta', [
+                'tip_identifikatora' => 'oib',
+                'identifikator' => $oib,
+                'no_data_error' => 0,
+            ]);
 
         if ($response->failed()) {
             throw SudskiRegistarException::requestFailed($response->status());
         }
 
-        return CompanyData::fromSudskiRegistarResponse($response->json());
-    }
+        $data = $response->json();
 
-    protected function lookupPath(): string
-    {
-        return '/api/javni/subjekti/detalji_subjekta';
+        if (empty($data['oib'])) {
+            throw SudskiRegistarException::notFound($oib);
+        }
+
+        return CompanyData::fromSudskiRegistarResponse($data);
     }
 
     protected function token(): string
@@ -66,11 +67,10 @@ class SudskiRegistarClient
         }
 
         $response = Http::asForm()
+            ->withBasicAuth($clientId, $clientSecret)
             ->timeout(config('laravel-croatia-toolkit.http.timeout', 5))
             ->post($this->baseUrl().'/api/oauth/token', [
                 'grant_type' => 'client_credentials',
-                'client_id' => $clientId,
-                'client_secret' => $clientSecret,
             ]);
 
         if ($response->failed()) {

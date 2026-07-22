@@ -9,49 +9,69 @@ function sudregClient(): SudskiRegistarClient
     return new SudskiRegistarClient('https://sudreg-data-test.gov.hr', 'client-id', 'client-secret');
 }
 
-it('authenticates and looks up a company by OIB', function () {
+/**
+ * Shaped after a real, live response verified against the test environment
+ * (2026-07-22, subject: Zagrebačka banka d.d., mbs 080000014).
+ */
+function fakeSubjectResponse(array $overrides = []): array
+{
+    return array_merge([
+        'mbs' => 80000014,
+        'status' => 1,
+        'oib' => 92963223473,
+        'potpuni_mbs' => '080000014',
+        'potpuni_oib' => '92963223473',
+        'tvrtka' => ['ime' => 'ZAGREBAČKA BANKA DIONIČKO DRUŠTVO'],
+        'sjediste' => [
+            'naziv_naselja' => 'Zagreb',
+            'ulica' => 'Trg bana Josipa Jelačića',
+            'kucni_broj' => 10,
+        ],
+    ], $overrides);
+}
+
+it('authenticates via HTTP basic auth and looks up a company by OIB', function () {
     Http::fake([
         'sudreg-data-test.gov.hr/api/oauth/token' => Http::response(['access_token' => 'token-123', 'expires_in' => 3600]),
-        'sudreg-data-test.gov.hr/api/javni/subjekti/detalji_subjekta*' => Http::response([
-            'oib' => '69435151530',
-            'mbs' => '080000014',
-            'tvrtka' => 'Primjer d.o.o.',
-            'adresa' => 'Ilica 1, Zagreb',
-            'pravni_oblik' => 'Društvo s ograničenom odgovornošću',
-            'status' => 'AKTIVAN',
-        ]),
+        'sudreg-data-test.gov.hr/api/javni/detalji_subjekta*' => Http::response(fakeSubjectResponse()),
     ]);
 
-    $company = sudregClient()->lookup('69435151530');
+    $company = sudregClient()->lookup('92963223473');
 
-    expect($company->name)->toBe('Primjer d.o.o.')
+    expect($company->name)->toBe('ZAGREBAČKA BANKA DIONIČKO DRUŠTVO')
         ->and($company->mbs)->toBe('080000014')
+        ->and($company->address)->toBe('Trg bana Josipa Jelačića 10, Zagreb')
         ->and($company->active)->toBeTrue();
 
-    Http::assertSent(fn ($request) => $request->hasHeader('Authorization', 'Bearer token-123'));
+    Http::assertSent(function ($request) {
+        return $request->hasHeader('Authorization', 'Bearer token-123')
+            && $request['tip_identifikatora'] === 'oib'
+            && $request['identifikator'] === '92963223473';
+    });
+
+    Http::assertSent(function ($request) {
+        return str_contains($request->url(), '/api/oauth/token')
+            && $request->hasHeader('Authorization', 'Basic '.base64_encode('client-id:client-secret'));
+    });
 });
 
-it('marks a BRISAN subject as inactive', function () {
+it('marks an inactive (non-status-1) subject as inactive', function () {
     Http::fake([
         'sudreg-data-test.gov.hr/api/oauth/token' => Http::response(['access_token' => 'token-123', 'expires_in' => 3600]),
-        'sudreg-data-test.gov.hr/api/javni/subjekti/detalji_subjekta*' => Http::response([
-            'oib' => '69435151530',
-            'tvrtka' => 'Primjer d.o.o.',
-            'status' => 'BRISAN',
-        ]),
+        'sudreg-data-test.gov.hr/api/javni/detalji_subjekta*' => Http::response(fakeSubjectResponse(['status' => 0])),
     ]);
 
-    expect(sudregClient()->lookup('69435151530')->active)->toBeFalse();
+    expect(sudregClient()->lookup('92963223473')->active)->toBeFalse();
 });
 
 it('throws when client credentials are not configured', function () {
     (new SudskiRegistarClient('https://sudreg-data-test.gov.hr'))->lookup('69435151530');
 })->throws(SudskiRegistarException::class);
 
-it('throws when the subject is not found', function () {
+it('throws when the subject is not found (empty object response)', function () {
     Http::fake([
         'sudreg-data-test.gov.hr/api/oauth/token' => Http::response(['access_token' => 'token-123', 'expires_in' => 3600]),
-        'sudreg-data-test.gov.hr/api/javni/subjekti/detalji_subjekta*' => Http::response(null, 404),
+        'sudreg-data-test.gov.hr/api/javni/detalji_subjekta*' => Http::response([]),
     ]);
 
     sudregClient()->lookup('69435151530');
@@ -60,15 +80,12 @@ it('throws when the subject is not found', function () {
 it('reuses the cached access token across calls', function () {
     Http::fake([
         'sudreg-data-test.gov.hr/api/oauth/token' => Http::response(['access_token' => 'token-123', 'expires_in' => 3600]),
-        'sudreg-data-test.gov.hr/api/javni/subjekti/detalji_subjekta*' => Http::response([
-            'oib' => '69435151530',
-            'tvrtka' => 'Primjer d.o.o.',
-        ]),
+        'sudreg-data-test.gov.hr/api/javni/detalji_subjekta*' => Http::response(fakeSubjectResponse()),
     ]);
 
     $client = sudregClient();
-    $client->lookup('69435151530');
-    $client->lookup('69435151530');
+    $client->lookup('92963223473');
+    $client->lookup('92963223473');
 
     Http::assertSentCount(3);
 });
