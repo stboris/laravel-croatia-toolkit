@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Stboris\LaravelCroatiaToolkit\Oib\Exceptions\SudskiRegistarException;
 use Stboris\LaravelCroatiaToolkit\Oib\SudskiRegistarClient;
@@ -75,6 +76,23 @@ it('throws when the subject is not found (empty object response)', function () {
     ]);
 
     sudregClient()->lookup('69435151530');
+})->throws(SudskiRegistarException::class);
+
+it('throws a SudskiRegistarException (not a raw ConnectionException) when the token request times out', function () {
+    Http::fake([
+        'sudreg-data-test.gov.hr/api/oauth/token' => fn () => throw new ConnectionException('Connection timed out'),
+    ]);
+
+    sudregClient()->lookup('92963223473');
+})->throws(SudskiRegistarException::class);
+
+it('throws a SudskiRegistarException (not a raw ConnectionException) when the lookup request times out', function () {
+    Http::fake([
+        'sudreg-data-test.gov.hr/api/oauth/token' => Http::response(['access_token' => 'token-123', 'expires_in' => 3600]),
+        'sudreg-data-test.gov.hr/api/javni/detalji_subjekta*' => fn () => throw new ConnectionException('Connection timed out'),
+    ]);
+
+    sudregClient()->lookup('92963223473');
 })->throws(SudskiRegistarException::class);
 
 it('reuses the cached access token across calls', function () {

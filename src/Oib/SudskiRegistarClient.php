@@ -2,6 +2,7 @@
 
 namespace Stboris\LaravelCroatiaToolkit\Oib;
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Stboris\LaravelCroatiaToolkit\Oib\Data\CompanyData;
@@ -28,15 +29,19 @@ class SudskiRegistarClient
 
     public function lookup(string $oib): CompanyData
     {
-        $response = Http::baseUrl($this->baseUrl().'/api/javni')
-            ->withToken($this->token())
-            ->timeout(config('laravel-croatia-toolkit.http.timeout', 5))
-            ->connectTimeout(config('laravel-croatia-toolkit.http.connect_timeout', 3))
-            ->get('/detalji_subjekta', [
-                'tip_identifikatora' => 'oib',
-                'identifikator' => $oib,
-                'no_data_error' => 0,
-            ]);
+        try {
+            $response = Http::baseUrl($this->baseUrl().'/api/javni')
+                ->withToken($this->token())
+                ->timeout(config('laravel-croatia-toolkit.http.timeout', 5))
+                ->connectTimeout(config('laravel-croatia-toolkit.http.connect_timeout', 3))
+                ->get('/detalji_subjekta', [
+                    'tip_identifikatora' => 'oib',
+                    'identifikator' => $oib,
+                    'no_data_error' => 0,
+                ]);
+        } catch (ConnectionException $exception) {
+            throw SudskiRegistarException::connectionFailed($exception);
+        }
 
         if ($response->failed()) {
             throw SudskiRegistarException::requestFailed($response->status());
@@ -66,12 +71,17 @@ class SudskiRegistarClient
             return $token;
         }
 
-        $response = Http::asForm()
-            ->withBasicAuth($clientId, $clientSecret)
-            ->timeout(config('laravel-croatia-toolkit.http.timeout', 5))
-            ->post($this->baseUrl().'/api/oauth/token', [
-                'grant_type' => 'client_credentials',
-            ]);
+        try {
+            $response = Http::asForm()
+                ->withBasicAuth($clientId, $clientSecret)
+                ->timeout(config('laravel-croatia-toolkit.http.timeout', 5))
+                ->connectTimeout(config('laravel-croatia-toolkit.http.connect_timeout', 3))
+                ->post($this->baseUrl().'/api/oauth/token', [
+                    'grant_type' => 'client_credentials',
+                ]);
+        } catch (ConnectionException $exception) {
+            throw SudskiRegistarException::connectionFailed($exception);
+        }
 
         if ($response->failed()) {
             throw SudskiRegistarException::authenticationFailed($response->status());
