@@ -20,10 +20,12 @@ banka d.d.), and the Filament `OibField` autofill working live in the
 sandbox's browser UI. See `SudskiRegistarClient.php` and
 `CompanyData.php` for the corrected contract.
 
-**Still open:** production credentials. Repeat the same free registration
-(personal email, no company needed) at **https://sudreg-data.gov.hr** when
-ready to ship, and set `CROATIA_TOOLKIT_SUDREG_BASE_URL` +
-production client id/secret wherever this package is actually deployed.
+Production credentials also registered and verified live via curl against
+`sudreg-data.gov.hr` (2026-07-22) — same OAuth2/lookup contract as test,
+confirmed with real data. Not stored anywhere in this repo or the sandbox;
+whoever deploys an app with this package sets
+`CROATIA_TOOLKIT_SUDREG_BASE_URL=https://sudreg-data.gov.hr` plus their own
+production client id/secret in that app's own `.env`.
 
 ## 2. Filament field — DONE, verified live
 
@@ -51,8 +53,14 @@ locale automatically. Verified in tests and live in the sandbox with
 
 ## 6. Before tagging v1.0.0
 
-- [ ] Decide: public or private GitHub repo (currently pushed public)
-- [ ] Packagist listing, if going public
-- [ ] Double check `composer.json` `authors` / `keywords` / `description`
-- [ ] Production Sudski registar credentials (see #1)
+Decided 2026-07-22: shipping free (not a paid Filament plugin listing) —
+the package is glue code around public APIs, not an operational tool like
+Outbox, and no comparable paid package for this exists anywhere.
+
+- [x] Repo is public
+- [x] `composer.json` authors/keywords/description already fine
+- [x] Production Sudski registar credentials (see #1)
+- [ ] Packagist listing
+- [ ] filamentphp.com/plugins submission — lead with the `OibField`
+      autofill as the headline feature, HNB/IBAN as supporting utilities
 - [ ] Delete this file
