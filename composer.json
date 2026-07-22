@@ -1,0 +1,66 @@
+{
+    "name": "stboris/laravel-croatia-toolkit",
+    "description": "Croatian business utilities for Laravel: OIB validation and Sudski registar company lookup, HNB exchange rates, and Croatian IBAN validation — with an optional Filament form field.",
+    "keywords": [
+        "laravel",
+        "filament",
+        "croatia",
+        "oib",
+        "iban",
+        "hnb",
+        "sudski-registar"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Boris Stiner",
+            "email": "boris.stiner@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/contracts": "^13.0",
+        "illuminate/http": "^13.0",
+        "illuminate/support": "^13.0",
+        "spatie/laravel-package-tools": "^1.16"
+    },
+    "require-dev": {
+        "filament/filament": "^5.0",
+        "orchestra/testbench": "^11.0",
+        "pestphp/pest": "^4.0"
+    },
+    "suggest": {
+        "filament/filament": "Required to use the OibField Filament form component."
+    },
+    "autoload": {
+        "psr-4": {
+            "Stboris\\LaravelCroatiaToolkit\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Stboris\\LaravelCroatiaToolkit\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "1.x-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Stboris\\LaravelCroatiaToolkit\\LaravelCroatiaToolkitServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
