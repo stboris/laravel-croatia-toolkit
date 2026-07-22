@@ -24,7 +24,8 @@ class OibField extends TextInput
     {
         parent::setUp();
 
-        $this->rule(new ValidOib)
+        $this->label('OIB')
+            ->rule(new ValidOib)
             ->maxLength(11)
             ->live(onBlur: true)
             ->afterStateUpdated(function (?string $state, callable $set): void {

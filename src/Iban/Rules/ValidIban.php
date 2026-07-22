@@ -13,7 +13,7 @@ class ValidIban implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (! is_string($value)) {
-            $fail('The :attribute is not a valid IBAN.');
+            $fail(trans('croatia-toolkit::validation.iban', ['attribute' => $attribute]));
 
             return;
         }
@@ -21,7 +21,7 @@ class ValidIban implements ValidationRule
         $valid = $this->croatianOnly ? Iban::isValidCroatian($value) : Iban::isValid($value);
 
         if (! $valid) {
-            $fail('The :attribute is not a valid IBAN.');
+            $fail(trans('croatia-toolkit::validation.iban', ['attribute' => $attribute]));
         }
     }
 }

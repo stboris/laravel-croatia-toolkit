@@ -11,6 +11,7 @@ class LaravelCroatiaToolkitServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('laravel-croatia-toolkit')
-            ->hasConfigFile('laravel-croatia-toolkit');
+            ->hasConfigFile('laravel-croatia-toolkit')
+            ->hasTranslations();
     }
 }

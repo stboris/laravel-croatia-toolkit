@@ -11,7 +11,7 @@ class ValidOib implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (! is_string($value) || ! Oib::isValid($value)) {
-            $fail('The :attribute is not a valid OIB.');
+            $fail(trans('croatia-toolkit::validation.oib', ['attribute' => $attribute]));
         }
     }
 }

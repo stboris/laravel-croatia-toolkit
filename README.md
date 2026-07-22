@@ -60,12 +60,11 @@ $company->address;
 $company->active;
 ```
 
-> **Note:** the OAuth2 token endpoint is confirmed against the portal's own
-> developer guide. The lookup path in `SudskiRegistarClient::lookupPath()`
-> is a best-effort guess based on that guide's documented method name
-> (`detalji_subjekta`) — confirm it against your own account's OpenAPI spec
-> (`{base}/api/javni/dokumentacija/open_api`, visible after registering)
-> before relying on it, and adjust `lookupPath()` if it differs.
+> Verified live against the test environment (2026-07-22): token auth is
+> HTTP Basic (client id/secret), the lookup endpoint is
+> `/api/javni/detalji_subjekta` with `tip_identifikatora`/`identifikator`
+> query params, and a not-found subject comes back as an empty JSON object
+> rather than a 404.
 
 ### Filament form field
 
@@ -116,6 +115,25 @@ $request->validate([
     'iban' => ['required', new ValidIban(croatianOnly: true)],
 ]);
 ```
+
+## Translations
+
+Validation messages are translated for English (default) and Croatian —
+whichever the app's locale (`app()->getLocale()`) resolves to is used
+automatically, no setup needed:
+
+```php
+app()->setLocale('hr');
+// "Polje oib nije ispravan OIB."
+```
+
+To customize the wording, publish and edit the files:
+
+```bash
+php artisan vendor:publish --tag="croatia-toolkit-translations"
+```
+
+which places them under `lang/vendor/croatia-toolkit/{locale}/validation.php`.
 
 ## Testing
 
