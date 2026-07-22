@@ -12,7 +12,7 @@ or test any of it.
 
 ```bash
 composer require stboris/laravel-croatia-toolkit
-php artisan vendor:publish --tag="laravel-croatia-toolkit-config"
+php artisan vendor:publish --tag="croatia-toolkit-config"
 ```
 
 ## OIB

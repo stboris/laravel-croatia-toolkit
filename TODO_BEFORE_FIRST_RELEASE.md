@@ -1,5 +1,20 @@
 # Before this package is real — delete this file once done
 
+## 0. Local test app
+
+A DDEV sandbox app lives at `~/PhpStormProjects/laravel-croatia-toolkit-sandbox`
+(not its own git repo — throwaway). It requires this package via a local path
+repo, wired in through `.ddev/docker-compose.packages.yaml` (a bind mount,
+since DDEV only mounts the project's own directory — a symlink to a sibling
+folder does not resolve inside the container). Filament panel at
+`https://laravel-croatia-toolkit-sandbox.ddev.site/admin`, login
+`boris@example.test` / `password`, resource "Demo Companies" exercises
+`OibField` + IBAN validation. Confirmed working end-to-end in a real browser
+(valid/invalid OIB and IBAN both validate correctly, save round-trips to the
+DB). Add your Sudski registar credentials to that app's `.env` once you have
+them (step 1 below) to test real autofill — without them, the field
+correctly no-ops instead of crashing.
+
 ## 1. Sudski registar (company lookup)
 
 1. Register for free at **https://sudreg-data-test.gov.hr** (test environment) —
