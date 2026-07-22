@@ -2,7 +2,7 @@
 
 Small, focused Croatian business utilities for Laravel: OIB validation and
 Sudski registar (court register) company lookup, HNB exchange rates, and
-Croatian IBAN validation — with an optional Filament v5 form field for OIB
+Croatian IBAN validation - with an optional Filament v5 form field for OIB
 autofill.
 
 Free and MIT-licensed. No Croatian company registration is required to use
@@ -39,7 +39,7 @@ $request->validate([
 ### Company lookup (Sudski registar)
 
 Looking up a company's name/address by OIB additionally needs a free
-client id/secret from the Sudski registar open data portal — no company
+client id/secret from the Sudski registar open data portal - no company
 registration required, just a valid email:
 
 - Test: https://sudreg-data-test.gov.hr
@@ -80,7 +80,7 @@ OibField::make('oib')
 
 ## HNB exchange rates
 
-Public, keyless API — no configuration needed. Uses the live
+Public, keyless API - no configuration needed. Uses the live
 `api.hnb.hr/tecajn-eur/v3` endpoint (the older `/tecajn/v2` path stopped
 updating when Croatia adopted the euro in 2023).
 
@@ -102,8 +102,8 @@ Croatia-specific shape check:
 ```php
 use Stboris\LaravelCroatiaToolkit\Iban\Iban;
 
-Iban::isValid('HR1523600001234567891');          // true — any valid IBAN
-Iban::isValidCroatian('HR1523600001234567891');  // true — Croatian shape + checksum
+Iban::isValid('HR1523600001234567891');          // true - any valid IBAN
+Iban::isValidCroatian('HR1523600001234567891');  // true - Croatian shape + checksum
 ```
 
 As a validation rule:
@@ -118,7 +118,7 @@ $request->validate([
 
 ## Translations
 
-Validation messages are translated for English (default) and Croatian —
+Validation messages are translated for English (default) and Croatian -
 whichever the app's locale (`app()->getLocale()`) resolves to is used
 automatically, no setup needed:
 
