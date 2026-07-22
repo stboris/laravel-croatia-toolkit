@@ -69,14 +69,28 @@ $company->active;
 ### Filament form field
 
 Requires `filament/filament`. Validates the OIB as you type and, once
-valid, autofills sibling fields from the Sudski registar:
+valid, autofills sibling fields from the Sudski registar. A magnifying-glass
+icon signals the lookup, turning into a checkmark on success or a warning
+triangle on failure, with a translated helper text explaining the behaviour:
 
 ```php
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\TextInput;
 use Stboris\LaravelCroatiaToolkit\Oib\Filament\OibField;
 
 OibField::make('oib')
-    ->autofill(name: 'company_name', address: 'company_address'),
+    ->autofill(name: 'company_name', address: 'address'),
+
+TextInput::make('company_name')
+    ->disabled(fn (Get $get) => $get('oib_locked')),
+
+TextInput::make('address')
+    ->disabled(fn (Get $get) => $get('oib_locked')),
 ```
+
+A successful lookup sets a `{name}_locked` state flag (`oib_locked` for a
+field named `oib`) - bind sibling fields' `->disabled()` to it if you don't
+want autofilled registry data overwritten by hand.
 
 ## HNB exchange rates
 
