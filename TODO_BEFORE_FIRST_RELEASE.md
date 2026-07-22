@@ -31,16 +31,12 @@ Confirmed in the sandbox: valid OIB autofills company name + address from
 real data; invalid OIB shows the (translated) validation error; missing
 credentials fail silently instead of crashing the form.
 
-## 3. HNB exchange rates — spot-checked via curl, not yet via the PHP client
+## 3. HNB exchange rates — DONE, verified live 2026-07-22
 
-The live endpoint and field shapes were confirmed by direct curl during
-development (see commit history), and the client is unit-tested against
-that real shape. Worth one live sanity check through the actual
-`ExchangeRateClient` class before shipping, since this is the piece most
-likely to silently break if HNB ever restructures the endpoint again:
-```php
-(new \Stboris\LaravelCroatiaToolkit\Hnb\ExchangeRateClient)->rate('USD');
-```
+Confirmed through the actual `ExchangeRateClient` class (not just curl):
+`rate('USD')` returned a real current-day rate. Still the piece most
+likely to silently break if HNB ever restructures the endpoint again —
+worth an occasional re-check, no action needed now.
 
 ## 4. IBAN — DONE, verified live
 
