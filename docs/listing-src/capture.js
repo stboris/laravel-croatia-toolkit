@@ -21,7 +21,21 @@ const { chromium } = require('playwright');
     await oibInput.blur();
     await p.waitForTimeout(2000);
 
-    await p.locator('.fi-page-content').first().screenshot({ path: 'form-card.png' });
+    // Capture breadcrumb + title + form, stopping just past the action buttons
+    // -- `main`'s own box extends far past the real content into empty page
+    // space, so clip explicitly instead of screenshotting the whole element.
+    const mainBox = await p.locator('main').first().boundingBox();
+    const buttonsBox = await p.getByRole('button', { name: 'Odustani' }).boundingBox();
+    const bottomPad = 40;
+    await p.screenshot({
+        path: 'form-card.png',
+        clip: {
+            x: mainBox.x,
+            y: mainBox.y,
+            width: mainBox.width,
+            height: (buttonsBox.y + buttonsBox.height + bottomPad) - mainBox.y,
+        },
+    });
 
     await b.close();
 })();
