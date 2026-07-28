@@ -1,0 +1,12 @@
+# Excluded from distribution archives (git archive / composer dist zips).
+# Consumers get the package source and docs only — dev tooling stays in the repo.
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.github export-ignore
+/.idea export-ignore
+/.phpunit.cache export-ignore
+/phpunit.xml export-ignore
+/tests export-ignore
+
+# Node tooling that renders the filamentphp.com listing image — not consumer docs.
+/docs/listing-src export-ignore
